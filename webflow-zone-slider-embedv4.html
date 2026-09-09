@@ -1,0 +1,33 @@
+<style>
+.zpanel { transition: flex-basis .6s cubic-bezier(.4, 0, .2, 1), flex-grow .6s cubic-bezier(.4, 0, .2, 1) !important; }
+.zpanel-open { flex: 1 1 0px !important; }
+.zbody-on { animation: zslide .8s cubic-bezier(.22, .61, .36, 1) .12s both; }
+.zbody-on .zwell { animation: zslide .9s cubic-bezier(.22, .61, .36, 1) .28s both; }
+@keyframes zslide { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: translateX(0); } }
+@media (max-width: 991px) {
+  .zrow { flex-direction: column !important; height: auto !important; }
+  .zpanel { flex: 0 0 auto !important; border-right: 0 !important; border-bottom: 1px solid #C4C2B2 !important; }
+  .zpanel-last { border-bottom: 0 !important; }
+  .zrail { flex-direction: row !important; align-items: center !important; justify-content: flex-start !important; gap: 18px; padding: 20px 24px !important; height: auto !important; }
+  .zlabel { writing-mode: horizontal-tb !important; transform: none !important; }
+  .zplus { margin-left: auto !important; }
+  .zbody { padding: 24px !important; height: auto !important; }
+  .zwell { aspect-ratio: 4 / 3; min-height: 0 !important; flex: 0 0 auto !important; }
+}
+</style>
+<script>
+document.addEventListener('click', function (e) {
+  var panel = e.target.closest('.zpanel');
+  if (!panel) return;
+  var row = panel.closest('.zrow');
+  if (!row) return;
+  row.querySelectorAll('.zpanel').forEach(function (p) {
+    var on = p === panel;
+    p.classList.toggle('zpanel-open', on);
+    var body = p.querySelector('.zbody');
+    var rail = p.querySelector('.zrail');
+    if (body) body.classList.toggle('zbody-on', on);
+    if (rail) rail.classList.toggle('zrail-off', on);
+  });
+});
+</script>
