@@ -1,0 +1,40 @@
+<style>
+/* Topic chips: selected + hover */
+.cf-chip:has(.cf-hidden:checked) { background: #ECE3DA; border-color: #855632; color: #000; cursor: default; }
+.cf-chip:hover { border-color: #855632; }
+/* Rating dots: fill the chosen dot and every dot before it */
+.cf-dot:has(.cf-hidden:checked), .cf-dot:has(~ .cf-dot .cf-hidden:checked) { background: #855632; }
+.cf-dots:hover .cf-dot { background: transparent; }
+.cf-dots .cf-dot:hover, .cf-dots .cf-dot:has(~ .cf-dot:hover) { background: #855632; }
+/* Rating row shows only for "Feedback on a shoot" */
+.cf-rating.is-on { display: flex; }
+/* Webflow form-default resets the class panel cannot reach */
+.cf-check-row .w-checkbox-input, .cf-check-row input[type="checkbox"] { float: none; width: 18px; height: 18px; margin: 0; accent-color: #000; }
+.cf-check-row .w-form-label { margin: 0; font-weight: 400; font-size: 13px; color: #3a3a34; }
+.cf-chip.w-form-label, .cf-dot.w-form-label { margin-bottom: 0; }
+.cf-input:focus, .cf-textarea:focus { outline: 1px solid #000; outline-offset: 0; border-color: #000; }
+</style>
+<script>
+(function () {
+  var hints = {
+    'Booking question': "Dates you have in mind, how many people, what you're shooting…",
+    'Feedback on a shoot': "What worked, what didn't, what you'd change about the room…",
+    'Partnership': "Who you are, what you're thinking, and how the studio fits…",
+    'Something else': "Anything at all. We read every note ourselves."
+  };
+  function sync(form) {
+    var picked = form.querySelector('input[name="topic"]:checked');
+    var rating = form.querySelector('.cf-rating');
+    var msg = form.querySelector('.cf-textarea');
+    var v = picked ? picked.value : '';
+    if (rating) rating.classList.toggle('is-on', v === 'Feedback on a shoot');
+    if (msg && hints[v]) msg.setAttribute('placeholder', hints[v]);
+  }
+  document.querySelectorAll('.cf-stack').forEach(function (form) {
+    sync(form);
+    form.addEventListener('change', function (e) {
+      if (e.target && e.target.name === 'topic') sync(form);
+    });
+  });
+})();
+</script>
