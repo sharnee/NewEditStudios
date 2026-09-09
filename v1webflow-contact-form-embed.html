@@ -1,0 +1,39 @@
+<style>
+/* Topic chips: selected state */
+.ct-chip:has(.ct-chip-input:checked) { background: #ECE3DA; border-color: #855632; color: #000; cursor: default; }
+.ct-chip:hover { border-color: #855632; }
+/* Rating dots: selected state (fills the chosen dot and every dot before it) */
+.ct-dot:has(.ct-chip-input:checked), .ct-dot:has(~ .ct-dot .ct-chip-input:checked) { background: #855632; }
+.ct-dots:hover .ct-dot { background: transparent; }
+.ct-dots .ct-dot:hover, .ct-dots .ct-dot:has(~ .ct-dot:hover) { background: #855632; }
+/* Rating row appears only for "Feedback on a shoot" */
+.ct-rating.is-on { display: flex; }
+/* Native checkbox tint */
+.ct-terms input[type="checkbox"] { width: 18px; height: 18px; margin: 0; accent-color: #000; }
+/* Field focus */
+.ct-input:focus, .ct-textarea:focus { outline: 1px solid #000; outline-offset: 0; border-color: #000; }
+</style>
+<script>
+(function () {
+  var hints = {
+    'Booking question': "Dates you have in mind, how many people, what you're shooting…",
+    'Feedback on a shoot': "What worked, what didn't, what you'd change about the room…",
+    'Partnership': "Who you are, what you're thinking, and how the studio fits…",
+    'Something else': "Anything at all. We read every note ourselves."
+  };
+  function sync(form) {
+    var picked = form.querySelector('input[name="topic"]:checked');
+    var rating = form.querySelector('.ct-rating');
+    var msg = form.querySelector('.ct-textarea');
+    var v = picked ? picked.value : '';
+    if (rating) rating.classList.toggle('is-on', v === 'Feedback on a shoot');
+    if (msg && hints[v]) msg.setAttribute('placeholder', hints[v]);
+  }
+  document.querySelectorAll('.ct-card').forEach(function (form) {
+    sync(form);
+    form.addEventListener('change', function (e) {
+      if (e.target && e.target.name === 'topic') sync(form);
+    });
+  });
+})();
+</script>
