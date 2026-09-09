@@ -1,0 +1,102 @@
+<!--
+WEBFLOW SETUP
+Pills:   .cf-chips > label.cf-chip (radio inside, name "topic") or plain Div.cf-chip. Topic is inferred from
+         data-topic → radio value → label text, matched by keyword (book / feedback / partner / else other).
+Rating:  .cf-rating (hidden by default) > .cf-dots > label.cf-dot ×5 (radio inside, name "rating") + .cf-rating-label
+Message: textarea.cf-textarea
+States:  style .cf-chip.is-active and .cf-dot.is-filled in the Designer; hover too. CSS below is a fallback only.
+Scripts run on the published/staging site, not the Designer canvas.
+-->
+<style>
+.cf-chip.is-active { background: #ECE3DA; border-color: #855632; color: #000; }
+.cf-dot.is-filled { background: #855632; }
+.cf-rating.is-on { display: flex; }
+.cf-chip input, .cf-dot input { position: absolute; opacity: 0; width: 0; height: 0; margin: 0; pointer-events: none; }
+.cf-chip, .cf-dot { position: relative; cursor: pointer; }
+</style>
+<script>
+(function () {
+  var HINTS = {
+    booking:  "Dates you have in mind, how many people, what you're shooting…",
+    feedback: "What worked, what didn't, what you'd change about the room…",
+    partner:  "Who you are, what you're thinking, and how the studio fits…",
+    other:    "Anything at all. We read every note ourselves."
+  };
+  var LABELS = ["", "Rough start", "Not quite", "Fine", "Good", "Loved it"];
+
+  function root(el) { return el.closest('.w-form') || el.closest('form') || document; }
+  function q(r, sel) { return r.querySelector(sel) || document.querySelector(sel); }
+  function all(r, sel) { var n = r.querySelectorAll(sel); return n.length ? n : document.querySelectorAll(sel); }
+
+  function topicKey(chip) {
+    var radio = chip.querySelector('input');
+    var raw = (chip.getAttribute('data-topic') || chip.textContent || (radio && radio.value) || '').toLowerCase();
+    if (/book/.test(raw)) return 'booking';
+    if (/feedback|shoot|edit/.test(raw)) return 'feedback';
+    if (/partner/.test(raw)) return 'partner';
+    return 'other';
+  }
+
+  function setTopic(chip) {
+    var r = root(chip), topic = topicKey(chip);
+    all(r, '.cf-chip').forEach(function (c) {
+      var on = c === chip, radio = c.querySelector('input[type="radio"]');
+      c.classList.toggle('is-active', on);
+      if (radio) radio.checked = on;
+    });
+    var hidden = q(r, 'input[type="hidden"][name="topic"], input[type="text"][name="topic"]');
+    if (hidden) hidden.value = topic;
+    var msg = q(r, '.cf-textarea, textarea');
+    if (msg) msg.placeholder = HINTS[topic];
+    var on = topic === 'feedback';
+    var rating = q(r, '.cf-rating');
+    if (rating) {
+      rating.classList.toggle('is-on', on);
+      rating.style.display = on ? 'flex' : 'none';
+      var checked = all(r, '.cf-dot input:checked');
+      setRating(r, on && checked.length ? Number(checked[0].value) || 0 : 0);
+    }
+    document.querySelectorAll('[data-show-for]').forEach(function (el) {
+      el.style.display = el.getAttribute('data-show-for').split(/[ ,]+/).indexOf(topic) > -1 ? '' : 'none';
+    });
+    var wrap = r === document ? q(r, '.w-form') : r;
+    if (wrap) { wrap.classList.remove('is-booking', 'is-feedback', 'is-partner', 'is-other'); wrap.classList.add('is-' + topic); }
+  }
+
+  function setRating(r, n) {
+    all(r, '.cf-dot').forEach(function (d, i) {
+      var radio = d.querySelector('input[type="radio"]');
+      d.classList.toggle('is-filled', i < n);
+      if (radio) { radio.value = String(i + 1); radio.checked = (i + 1 === n); }
+    });
+    var hidden = q(r, 'input[type="hidden"][name="rating"]');
+    if (hidden) hidden.value = n || '';
+    var label = q(r, '.cf-rating-label');
+    if (label) {
+      if (label.dataset.text === undefined) label.dataset.text = label.textContent; // instruction typed in the Designer
+      label.textContent = n ? LABELS[n] : label.dataset.text;
+    }
+  }
+
+  function init() {
+    document.addEventListener('click', function (e) {
+      var chip = e.target.closest('.cf-chip');
+      if (chip) { if (chip.tagName !== 'LABEL') e.preventDefault(); setTopic(chip); return; }
+      var dot = e.target.closest('.cf-dot');
+      if (dot) {
+        if (dot.tagName !== 'LABEL') e.preventDefault();
+        var dots = Array.prototype.slice.call(all(root(dot), '.cf-dot'));
+        setRating(root(dot), dots.indexOf(dot) + 1);
+      }
+    });
+    // Also react to keyboard / Webflow-driven radio changes
+    document.addEventListener('change', function (e) {
+      var chip = e.target.closest && e.target.closest('.cf-chip');
+      if (chip) setTopic(chip);
+    });
+    var first = document.querySelector('.cf-chip.is-active') || document.querySelector('.cf-chip');
+    if (first) setTopic(first);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
