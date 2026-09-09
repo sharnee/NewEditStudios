@@ -1,0 +1,32 @@
+<style>
+.zpanel { transition: flex-basis .35s ease, flex-grow .35s ease !important; }
+.zpanel-open { flex: 1 1 0px !important; }
+.zbody-on { animation: zfade .3s ease .1s both; }
+@keyframes zfade { from { opacity: 0; } to { opacity: 1; } }
+@media (max-width: 991px) {
+  .zrow { flex-direction: column !important; height: auto !important; }
+  .zpanel { flex: 0 0 auto !important; border-right: 0 !important; border-bottom: 1px solid #C4C2B2 !important; }
+  .zpanel-last { border-bottom: 0 !important; }
+  .zrail { flex-direction: row !important; align-items: center !important; justify-content: flex-start !important; gap: 18px; padding: 20px 24px !important; height: auto !important; }
+  .zlabel { writing-mode: horizontal-tb !important; transform: none !important; }
+  .zplus { margin-left: auto !important; }
+  .zbody { padding: 24px !important; height: auto !important; }
+  .zwell { aspect-ratio: 4 / 3; min-height: 0 !important; flex: 0 0 auto !important; }
+}
+</style>
+<script>
+document.addEventListener('click', function (e) {
+  var panel = e.target.closest('.zpanel');
+  if (!panel) return;
+  var row = panel.closest('.zrow');
+  if (!row) return;
+  row.querySelectorAll('.zpanel').forEach(function (p) {
+    var on = p === panel;
+    p.classList.toggle('zpanel-open', on);
+    var body = p.querySelector('.zbody');
+    var rail = p.querySelector('.zrail');
+    if (body) body.classList.toggle('zbody-on', on);
+    if (rail) rail.classList.toggle('zrail-off', on);
+  });
+});
+</script>
